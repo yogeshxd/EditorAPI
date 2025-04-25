@@ -63,7 +63,7 @@ exports.addSubtitles = async (id, text, start, end) => {
 
   return new Promise((resolve, reject) => {
     ffmpeg(original.path)
-      .videoFilter(`drawtext=fontfile=${fontPath}:text='${text}':enable='between(t,${start},${end})':x=10:y=H-th-10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5`)
+    .videoFilter(`drawtext=fontfile=${fontPath}:text='${text}':enable='between(t,${start},${end})':x=(w-text_w)/2:y=h-(text_h*3):fontsize=60:fontcolor=white`)
       .output(outputPath)
       .on('end', async () => {
         const subtitled = await prisma.video.create({
