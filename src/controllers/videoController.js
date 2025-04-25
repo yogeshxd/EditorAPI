@@ -12,3 +12,16 @@ exports.uploadVideo = async (req, res) => {
     res.status(500).json({ error: 'Upload failed' });
   }
 };
+
+exports.trimVideo = async (req, res) => {
+    const { id } = req.params;
+    const { start, end } = req.body;
+  
+    try {
+      const trimmed = await videoService.trimVideo(id, start, end);
+      res.json(trimmed);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Trimming failed' });
+    }
+  };

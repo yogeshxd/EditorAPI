@@ -13,4 +13,7 @@ const upload = multer({ storage });
 // Route to upload video
 router.post('/upload', upload.single('video'), videoController.uploadVideo);
 
+// Route to trim video
+router.post('/:id/trim', videoController.trimVideo);
+
 module.exports = router;

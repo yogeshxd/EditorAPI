@@ -21,10 +21,6 @@ app.use(express.json());
 app.use(morgan('dev')); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Ensure upload directory exists 
-const uploadDir = path.join(__dirname, 'uploads'); 
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
 app.use('/api/videos', videoRoutes);
 
 const PORT = process.env.PORT || 5000; 
