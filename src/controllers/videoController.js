@@ -25,3 +25,16 @@ exports.trimVideo = async (req, res) => {
       res.status(500).json({ error: 'Trimming failed' });
     }
   };
+
+exports.addSubtitles = async (req, res) => {
+    const { id } = req.params;
+    const { text, start, end } = req.body;
+  
+    try {
+      const subtitled = await videoService.addSubtitles(id, text, start, end);
+      res.json(subtitled);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Subtitle overlay failed' });
+    }
+  };

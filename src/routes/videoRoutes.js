@@ -16,4 +16,7 @@ router.post('/upload', upload.single('video'), videoController.uploadVideo);
 // Route to trim video
 router.post('/:id/trim', videoController.trimVideo);
 
+// Route to subtitle overlay
+router.post('/:id/subtitles', videoController.addSubtitles);
+
 module.exports = router;

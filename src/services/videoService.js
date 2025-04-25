@@ -53,3 +53,31 @@ exports.trimVideo = async (id, start, end) => {
       .run();
   });
 };
+
+exports.addSubtitles = async (id, text, start, end) => {
+  const original = await prisma.video.findUnique({ where: { id: Number(id) } });
+  if (!original) throw new Error('Video not found');
+
+  const outputPath = original.path.replace(/(\.\w+)$/, `_subtitled$1`);
+  const fontPath = '/usr/share/fonts/TTF/DejaVuSans-Bold.ttf'; // Adjust based on your OS
+
+  return new Promise((resolve, reject) => {
+    ffmpeg(original.path)
+      .videoFilter(`drawtext=fontfile=${fontPath}:text='${text}':enable='between(t,${start},${end})':x=10:y=H-th-10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5`)
+      .output(outputPath)
+      .on('end', async () => {
+        const subtitled = await prisma.video.create({
+          data: {
+            name: path.basename(outputPath),
+            path: outputPath,
+            duration: original.duration,
+            size: fs.statSync(outputPath).size,
+            status: 'subtitled'
+          }
+        });
+        resolve(subtitled);
+      })
+      .on('error', reject)
+      .run();
+  });
+};
