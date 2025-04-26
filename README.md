@@ -123,7 +123,7 @@ Server will start at: `http://localhost:5000`
 
 ## 📹 Demo
 
-You can view the demo video walkthrough [here](#).
+You can view the demo video walkthrough [here](https://youtu.be/SDcUdMy0hdM).
 
 ---
 
