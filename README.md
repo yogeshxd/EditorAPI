@@ -91,7 +91,7 @@ npx prisma generate
 ```bash
 npm run dev   # if using nodemon
 ```
-# OR
+#### OR
 ```bash
 node src/index.js
 ```
