@@ -38,3 +38,15 @@ exports.addSubtitles = async (req, res) => {
       res.status(500).json({ error: 'Subtitle overlay failed' });
     }
   };
+
+  exports.renderFinalVideo = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const final = await videoService.renderFinalVideo(id);
+      res.json(final);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Rendering failed' });
+    }
+  };

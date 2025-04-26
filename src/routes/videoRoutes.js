@@ -19,4 +19,7 @@ router.post('/:id/trim', videoController.trimVideo);
 // Route to subtitle overlay
 router.post('/:id/subtitles', videoController.addSubtitles);
 
+// Route to render final video
+router.post('/:id/render', videoController.renderFinalVideo);
+
 module.exports = router;

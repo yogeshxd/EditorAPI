@@ -81,3 +81,29 @@ exports.addSubtitles = async (id, text, start, end) => {
       .run();
   });
 };
+
+exports.renderFinalVideo = async (id) => {
+  const source = await prisma.video.findUnique({ where: { id: Number(id) } });
+  if (!source) throw new Error('Video not found');
+
+  const finalPath = source.path.replace(/(\.\w+)$/, `_final$1`);
+
+  return new Promise((resolve, reject) => {
+    ffmpeg(source.path)
+      .output(finalPath)
+      .on('end', async () => {
+        const final = await prisma.video.create({
+          data: {
+            name: path.basename(finalPath),
+            path: finalPath,
+            duration: source.duration,
+            size: fs.statSync(finalPath).size,
+            status: 'final'
+          }
+        });
+        resolve(final);
+      })
+      .on('error', reject)
+      .run();
+  });
+};
