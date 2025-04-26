@@ -22,4 +22,7 @@ router.post('/:id/subtitles', videoController.addSubtitles);
 // Route to render final video
 router.post('/:id/render', videoController.renderFinalVideo);
 
+// Route to download video
+router.get('/:id/download', videoController.downloadFinalVideo);
+
 module.exports = router;

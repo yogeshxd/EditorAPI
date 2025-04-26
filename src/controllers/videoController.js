@@ -50,3 +50,15 @@ exports.addSubtitles = async (req, res) => {
       res.status(500).json({ error: 'Rendering failed' });
     }
   };
+
+exports.downloadFinalVideo = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const file = await videoService.getFinalVideo(id);
+      res.download(file.path, file.name);  // triggers file download
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Download failed' });
+    }
+  };

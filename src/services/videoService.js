@@ -107,3 +107,17 @@ exports.renderFinalVideo = async (id) => {
       .run();
   });
 };
+
+exports.getFinalVideo = async (id) => {
+  const video = await prisma.video.findUnique({ where: { id: Number(id) } });
+  if (!video) throw new Error('Video not found');
+
+  if (video.status !== 'final') {
+    throw new Error('Video is not rendered yet.');
+  }
+
+  return {
+    path: video.path,
+    name: video.name
+  };
+};
