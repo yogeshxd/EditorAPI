@@ -42,14 +42,21 @@ The task was to create a **modular, scalable backend service** for a **web-based
 ## 🏗 Project Structure
 
 ```
-/src
-├── controllers/
-├── routes/
-├── services/
-├── index.js
 /prisma/
 ├── schema.prisma
+
+/src/
+├── controllers/
+    ├── videoController.js
+├── routes/
+    ├── videoRoutes.js
+├── services/
+    ├── videoServices.js
+├── index.js
+
 /uploads/
+
+├── package.json
 ```
 
 ---
