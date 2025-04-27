@@ -128,6 +128,16 @@ Server will start at: `http://localhost:5000`
 
 ---
 
+## API Documentation
+
+Interactive API documentation is available using *Swagger UI*.
+Access it here:
+```
+http://localhost:5000/api-docs
+```
+Example Screenshot:
+![Swagger API Documentation](./image.png)
+
 ## 📹 Demo
 
 You can view the demo video walkthrough [here](https://youtu.be/SDcUdMy0hdM).

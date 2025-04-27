@@ -39,7 +39,7 @@ exports.addSubtitles = async (req, res) => {
     }
   };
 
-  exports.renderFinalVideo = async (req, res) => {
+exports.renderFinalVideo = async (req, res) => {
     const { id } = req.params;
   
     try {
