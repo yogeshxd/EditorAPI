@@ -27,80 +27,83 @@ exports.saveVideo = (file) => {
 
 
 exports.trimVideo = async (id, start, end) => {
-  const original = await prisma.video.findUnique({ where: { id: Number(id) } });
-  if (!original) throw new Error('Video not found');
+  const video = await prisma.video.findUnique({ where: { id: Number(id) } });
+  if (!video) throw new Error('Video not found');
 
-  const trimmedPath = original.path.replace(/(\.\w+)$/, `_trimmed$1`);
-
-  return new Promise((resolve, reject) => {
-    ffmpeg(original.path)
-      .setStartTime(start)
-      .setDuration(end - start)
-      .output(trimmedPath)
-      .on('end', async () => {
-        const trimmed = await prisma.video.create({
-          data: {
-            name: path.basename(trimmedPath),
-            path: trimmedPath,
-            duration: end - start,
-            size: fs.statSync(trimmedPath).size,
-            status: 'trimmed'
-          }
-        });
-        resolve(trimmed);
-      })
-      .on('error', reject)
-      .run();
+  // Save trim step
+  await prisma.editStep.create({
+    data: {
+      videoId: video.id,
+      type: 'trim',
+      startTime: parseInt(start),
+      endTime: parseInt(end),
+    }
   });
+
+  return { message: 'Trim step saved successfully' };
 };
 
 exports.addSubtitles = async (id, text, start, end) => {
-  const original = await prisma.video.findUnique({ where: { id: Number(id) } });
-  if (!original) throw new Error('Video not found');
+  const video = await prisma.video.findUnique({ where: { id: Number(id) } });
+  if (!video) throw new Error('Video not found');
 
-  const outputPath = original.path.replace(/(\.\w+)$/, `_subtitled$1`);
-  const fontPath = '/usr/share/fonts/TTF/DejaVuSans-Bold.ttf'; // Adjust based on your OS
-
-  return new Promise((resolve, reject) => {
-    ffmpeg(original.path)
-    .videoFilter(`drawtext=fontfile=${fontPath}:text='${text}':enable='between(t,${start},${end})':x=(w-text_w)/2:y=h-(text_h*3):fontsize=60:fontcolor=white`)
-      .output(outputPath)
-      .on('end', async () => {
-        const subtitled = await prisma.video.create({
-          data: {
-            name: path.basename(outputPath),
-            path: outputPath,
-            duration: original.duration,
-            size: fs.statSync(outputPath).size,
-            status: 'subtitled'
-          }
-        });
-        resolve(subtitled);
-      })
-      .on('error', reject)
-      .run();
+  // Save subtitle step
+  await prisma.editStep.create({
+    data: {
+      videoId: video.id,
+      type: 'subtitle',
+      text: text,
+      startTime: parseInt(start),
+      endTime: parseInt(end),
+    }
   });
+
+  return { message: 'Subtitle step saved successfully' };
 };
 
 exports.renderFinalVideo = async (id) => {
-  const source = await prisma.video.findUnique({ where: { id: Number(id) } });
-  if (!source) throw new Error('Video not found');
+  const video = await prisma.video.findUnique({ where: { id: Number(id) }, include: { edits: true } });
+  if (!video) throw new Error('Video not found');
 
-  const finalPath = source.path.replace(/(\.\w+)$/, `_final$1`);
+  const tempOutputPath = video.path.replace(/(\.\w+)$/, `_temp$1`);
+
+  let command = ffmpeg(video.path);
+
+  // Apply all edit steps
+  video.edits.forEach((step) => {
+    if (step.type === 'trim') {
+      command = command.setStartTime(step.startTime).setDuration(step.endTime - step.startTime);
+    }
+  });
+
+  let drawtextFilters = [];
+  video.edits.forEach((step) => {
+    if (step.type === 'subtitle') {
+      const fontPath = '/usr/share/fonts/TTF/DejaVuSans-Bold.ttf'; // Adjust path based on your OS
+      drawtextFilters.push(
+        `drawtext=fontfile=${fontPath}:text='${step.text}':enable='between(t,${step.startTime},${step.endTime})':x=(w-text_w)/2:y=h-(text_h*3):fontsize=60:fontcolor=white`
+      );
+    }
+  });
+
+  if (drawtextFilters.length > 0) {
+    command = command.videoFilter(drawtextFilters);
+  }
 
   return new Promise((resolve, reject) => {
-    ffmpeg(source.path)
-      .output(finalPath)
+    command
+      .output(tempOutputPath)
       .on('end', async () => {
         const final = await prisma.video.create({
           data: {
-            name: path.basename(finalPath),
-            path: finalPath,
-            duration: source.duration,
-            size: fs.statSync(finalPath).size,
+            name: tempOutputPath.split('/').pop(),
+            path: tempOutputPath,
+            duration: video.duration,
+            size: fs.statSync(tempOutputPath).size,
             status: 'final'
           }
         });
+
         resolve(final);
       })
       .on('error', reject)
